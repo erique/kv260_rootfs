@@ -1,0 +1,8 @@
+/gcc-arm-*-aarch64-none-*/
+/out
+/fsbl.elf
+/pmufw.elf
+/bl31.elf
+/u-boot.dtb
+/u-boot.elf
+/boot.bin
