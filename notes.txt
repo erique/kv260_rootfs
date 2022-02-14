@@ -4,8 +4,8 @@ tar xvJf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
 export PATH=$PATH:$PWD/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin
 
 # fsbl.elf
-make -C embeddedsw/lib/sw_apps/zynqmp_fsbl/src BOARD=kv260 CFLAGS+=-DFSBL_DEBUG_DETAILED
-cp embeddedsw/lib/sw_apps/zynqmp_fsbl/src/fsbl.elf .
+make -C zynqmp-pmufw-builder/embeddedsw/lib/sw_apps/zynqmp_fsbl/src BOARD=kv260 CFLAGS+=-DFSBL_DEBUG_DETAILED
+cp zynqmp-pmufw-builder/embeddedsw/lib/sw_apps/zynqmp_fsbl/src/fsbl.elf .
 
 # pmufw.elf
 pushd zynqmp-pmufw-builder
