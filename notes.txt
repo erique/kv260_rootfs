@@ -2,6 +2,7 @@
 wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
 tar xvJf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
 export PATH=$PATH:$PWD/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf/bin
+rm gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
 
 # fsbl.elf
 make -C zynqmp-pmufw-builder/embeddedsw/lib/sw_apps/zynqmp_fsbl/src BOARD=kv260 CFLAGS+=-DFSBL_DEBUG_DETAILED
@@ -14,9 +15,11 @@ pushd zynqmp-pmufw-builder
 cp pmufw.elf ..
 popd
 
-# u-boot, kernel and rootfs
+# buildroot (u-boot, linux and rootfs)
 make -C buildroot O=$PWD/out defconfig BR2_DEFCONFIG=$PWD/zynqmp_kv260_defconfig
 make -C out
+
+# u-boot, tf-a
 cp out/build/arm-trusted-firmware-xlnx_rebase_v2.4_2021.1_update1/build/zynqmp/debug/bl31/bl31.elf .
 cp out/images/u-boot     u-boot.elf
 cp out/images/u-boot.dtb u-boot.dtb
@@ -25,7 +28,7 @@ cp out/images/u-boot.dtb u-boot.dtb
 ./out/build/uboot-xilinx-v2021.2/tools/mkimage -T zynqmpbif -d bootgen.bif boot.bin
 
 # flash boot.bin to QSPI (web interface)
-Hold 'FWUEN' button while powering on the KV260.
+Hold 'FWUEN' button while powering on/resetting the KV260.
 Follow instructions on serial (/dev/ttyUSB1).
 
 # write out the image to SDCARD
@@ -34,3 +37,10 @@ sudo dd if=out/images/sdcard.img of=/dev/sdX conv=fsync bs=1M
 # boot from u-boot
 setenv bootargs "root=/dev/mmcblk1p2 ro rootwait earlyprintk console=ttyPS0,115200n8"
 load mmc 1:1 ${fdt_addr_r} zynqmp-smk-k26-revA.dtb && load mmc 1:1 ${kernel_addr_r} Image && booti ${kernel_addr_r} - ${fdt_addr_r}
+
+# boot ubuntu fit image from u-boot
+setenv devtype mmc; setenv devnum 1; run scan_dev_for_boot
+
+# configure fpga from u-boot / sdcard
+fatload mmc 1:1 ${kernel_addr_r} pmod_fan.bit
+fpga load 0 ${fileaddr} ${fileaddr}
